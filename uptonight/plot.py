@@ -234,20 +234,77 @@ class Plot:
         plt.clf()
         plt.close()
 
-    def save_png(self, plt, output_datestamp):
-        """Save plot as png
+    def save_legend(self, ax, output_datestamp):
+        """Save only the marker legend as a separate PNG."""
+        handles, labels = ax.get_legend_handles_labels()
+        fig = plt.figure(
+            figsize=plt.rcParams["figure.figsize"],
+            dpi=plt.rcParams["figure.dpi"],
+        )
+        fig.legend(handles, labels, loc="center")
+        if output_datestamp:
+            fig.savefig(f"{self._output_dir}/uptonight-{self._prefix}legend-{self._current_day}{self._filter_ext}.png")
+        fig.savefig(f"{self._output_dir}/uptonight-{self._prefix}legend{self._filter_ext}.png")
+        plt.close(fig)
 
-        Args:
-            plt (Plot): The plot
-        """
-        if not self._live:
-            if output_datestamp:
-                plt.savefig(
-                    f"{self._output_dir}/uptonight-{self._prefix}plot-{self._current_day}{self._filter_ext}.png"
-                )
-            plt.savefig(f"{self._output_dir}/uptonight-{self._prefix}plot{self._filter_ext}.png")
-        else:
-            plt.savefig(f"{self._output_dir}/uptonight-{self._prefix}liveplot{self._filter_ext}.png")
+    def save_info(self, output_datestamp):
+        """Save only the current-info text block as a separate PNG."""
+        fig = plt.figure(
+            figsize=plt.rcParams["figure.figsize"],
+            dpi=plt.rcParams["figure.dpi"],
+        )
+        # replicate all the plt.figtext(...) calls from legend()
+        plt.figtext(
+            0.02, 0.915,
+            f"Sunset/rise: {self._sun_moon.sun_next_setting_civil_short()} / {self._sun_moon.sun_next_rising_civil_short()}",
+            size=12,
+        )
+        plt.figtext(
+            0.02, 0.895,
+            f"Moonrise/set: {self._sun_moon.moon_next_rising_short()} / {self._sun_moon.moon_next_setting_short()}",
+            size=12,
+        )
+        plt.figtext(
+            0.02, 0.875,
+            f"Moon illumination: {self._sun_moon.moon_illumination():.0f}%",
+            size=12,
+        )
+        plt.figtext(
+            0.02, 0.855,
+            f"Alt constraint min/max: {self._constraints['altitude_constraint_min']}° / {self._constraints['altitude_constraint_max']}°",
+            size=12,
+        )
+        plt.figtext(
+            0.02, 0.835,
+            f"Airmass constraint: {self._constraints['airmass_constraint']}",
+            size=12,
+        )
+        plt.figtext(
+            0.02, 0.815,
+            f"Size constraint min/max: {self._constraints['size_constraint_min']}' / {self._constraints['size_constraint_max']}'",
+            size=12,
+        )
+        plt.figtext(
+            0.02, 0.795,
+            f"Fraction of time: {self._constraints['fraction_of_time_observable_threshold']*100:.0f}%",
+            size=12,
+        )
+        plt.figtext(
+            0.02, 0.775,
+            f"Moon separation: {self._moon_separation:.0f}°",
+            size=12,
+        )
+        # marker‐type legend keys
+        plt.figtext(0.02, 0.750, "Solar System: Big circle", size=8)
+        plt.figtext(0.02, 0.735, "DSO Nebula: Diamond", size=8)
+        plt.figtext(0.02, 0.720, "DSO Galaxy: Circle", size=8)
+        plt.figtext(0.02, 0.705, "DSO Rest: Square", size=8)
+        plt.figtext(0.02, 0.690, "Comets: x", size=8)
+        plt.tight_layout()
+        if output_datestamp:
+            fig.savefig(f"{self._output_dir}/uptonight-{self._prefix}info-{self._current_day}{self._filter_ext}.png")
+        fig.savefig(f"{self._output_dir}/uptonight-{self._prefix}info{self._filter_ext}.png")
+        plt.close(fig)
 
     def legend(self, ax, astronight_from, astronight_to):
         """Create legend and descriptions of the plot
