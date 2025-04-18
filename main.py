@@ -92,6 +92,11 @@ def main():
     else:
         cfg = None
 
+    # Mobile mode for splitting output images
+    mobile_mode = False
+    if cfg is not None and "mobile_mode" in cfg:
+        mobile_mode = bool(cfg["mobile_mode"])
+
     if cfg is not None and "location" in cfg.keys():
         for item in cfg["location"].items():
             if item[1] is not None:
@@ -265,9 +270,11 @@ def main():
                 observation_date=observation_date,
                 type_filter=type_filter,
                 output_dir=output_dir,
-                live=live.get("enabled"),
+                live=False,
+                mobile_mode=mobile_mode,
                 target=target,
                 prefix=prefix,
+                mqtt=mqtt,
             )
 
             uptonight.calc(
