@@ -151,6 +151,7 @@ class UpTonight:
         target=None,
         prefix="",
         mqtt=None,
+        mobile_mode=False,
     ):
         """Init function for UpTonight
 
@@ -192,6 +193,7 @@ class UpTonight:
         if self._prefix != "" and not self._prefix.endswith("-"):
             self._prefix += "-"
         self._mqtt = mqtt
+        self._mobile_mode = mobile_mode
 
         self._observer_location = self._get_observer_location()
         self._observer = self._get_observer(self._observer_location)
@@ -459,11 +461,21 @@ class UpTonight:
             self._observation_timeframe["observing_end_time"]
         )
 
-        plot.legend(ax, astronight_from.strftime("%m/%d %H:%M"), astronight_to.strftime("%m/%d %H:%M"))
-
-        # Save plot
-        _LOGGER.debug("Saving plot")
-        plot.save_png(plt, self._output_datestamp)
+        if self._mobile_mode:
+            _LOGGER.debug("Mobile mode → saving plot, legend, and info separately")
+            # 1) Sky map only
+            plot.save_png(plt, self._output_datestamp)
+            _LOGGER.debug(" → plot-only saved")
+            # 2) Marker‑legend only
+            plot.save_legend(ax, self._output_datestamp)
+            _LOGGER.debug(" → legend-only saved")
+            # 3) Current‑info block only
+            plot.save_info(self._output_datestamp)
+            _LOGGER.debug(" → info-only saved")
+        else:
+            plot.legend(ax, astronight_from.strftime("%m/%d %H:%M"), astronight_to.strftime("%m/%d %H:%M"))
+            _LOGGER.debug("Saving combined plot")
+            plot.save_png(plt, self._output_datestamp)
 
         if not self._live:
             # Save reports
